@@ -1,48 +1,73 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+
 
 library(shiny)
+library(shinythemes)
+library(ggplot2)
+redwinequality <- read.csv("~/Comp Stats/winequality-red.csv", sep=";")
 
-# Define UI for application that draws a histogram
+# Define UI
 ui <- fluidPage(
-
-    # Application title
-    titlePanel("Quality of Various Red Wines"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
-    )
+    theme = shinytheme("united"),
+    # Application title and holding page
+    navbarPage("Quality of Various Red Wines",
+               # Show the raw data used
+               tabPanel("The Data",
+                   mainPanel(
+                       p("This is the raw data we are using. It measures the amounts of various chemicals
+                        in a number of red wines, and the eventual quality rating on a scale of 1-10. In
+                         the following tabs you can attempt some regression tests to find out the most 
+                         important factors in determining the final quality."),
+                       tableOutput("rawdata"))
+               ),
+               tabPanel("Simple Linear",
+                   sidebarLayout(
+                       sidebarPanel(
+                           "Variable Selection",
+                           p("Select a variable from the list to compare with quality."),
+                           selectInput("variable",
+                                       "Variable: ",
+                                       c("Fixed Acidity" = "fixed.acidity",
+                                         "Volatile Acidity" = "volatile.acidity",
+                                         "Citric Acid" = "citric.acid",
+                                         "Residual Sugar" = "residual.sugar",
+                                         "Chlorides" = "chlorides",
+                                         "Free Sulfur Dioxide" = "free.sulfur.dioxide",
+                                         "Total Sulfur Dioxide" = "total.sulfur.dioxide",
+                                         "Density" = "density",
+                                         "pH",
+                                         "Sulphates" = "sulphates",
+                                         "% ABV" = "alcohol"),
+                                       selected = NULL)
+                       ),
+                       mainPanel(
+                           plotOutput("linearplot"),
+                           
+                       )
+                   )
+               )
+    ),
 )
 
-# Define server logic required to draw a histogram
+# Define server logic 
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    })
+    # Display the raw data as a table
+    output$rawdata = renderTable(
+        redwinequality, 
+        width = "500px"
+    )
+    # Reactive function to convert the input of 
+    # Plotting the data and a linear regression line based on the variable chosen by the user
+    output$linearplot = renderPlot(
+        ggplot(data = redwinequality, aes_string(x = input$variable, y = "quality")) +
+            geom_point() +
+            geom_smooth(method = lm, formula = y~x)
+    )
+    # Showing the actual linear regression formula
+    linearfit = lm(formula = quality ~ input$variable, data = redwinequality)
+    output$simplelinear = renderPrint(
+        summary(linearfit)
+    )
 }
 
 # Run the application 
