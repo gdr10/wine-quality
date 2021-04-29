@@ -23,7 +23,7 @@ ui <- fluidPage(
                    sidebarLayout(
                        sidebarPanel(
                            "Variable Selection",
-                           p("Select a variable from the list to compare with quality."),
+                           p("Select which variable you would like to use for the linear regression."),
                            selectInput("variable",
                                        "Variable: ",
                                        c("Fixed Acidity" = "fixed.acidity",
@@ -41,7 +41,7 @@ ui <- fluidPage(
                        ),
                        mainPanel(
                            plotOutput("linearplot"),
-                           
+                           verbatimTextOutput("simplelinear")
                        )
                    )
                )
@@ -56,7 +56,21 @@ server <- function(input, output) {
         redwinequality, 
         width = "500px"
     )
-    # Reactive function to convert the input of 
+    # Reactive function to convert the input variable from a string into a useable variable
+    inputvar = reactive({
+        if(input$variable == "fixed.acidity") return(redwinequality$fixed.acidity)
+        if(input$variable == "volatile.acidity") return(redwinequality$volatile.acidity)
+        if(input$variable == "citric.acid") return(redwinequality$citric.acid)
+        if(input$variable == "residual.sugar") return(redwinequality$residual.sugar)
+        if(input$variable == "chlorides") return(redwinequality$chlorides)
+        if(input$variable == "free.sulfur.dioxide") return(redwinequality$free.sulfur.dioxide)
+        if(input$variable == "total.sulfur.dioxide") return(redwinequality$total.sulfur.dioxide)
+        if(input$variable == "density") return(redwinequality$density)
+        if(input$variable == "pH") return(redwinequality$pH)
+        if(input$variable == "sulphates") return(redwinequality$sulphates)
+        if(input$variable == "alcohol") return(redwinequality$alcohol)
+    })
+    
     # Plotting the data and a linear regression line based on the variable chosen by the user
     output$linearplot = renderPlot(
         ggplot(data = redwinequality, aes_string(x = input$variable, y = "quality")) +
@@ -64,9 +78,8 @@ server <- function(input, output) {
             geom_smooth(method = lm, formula = y~x)
     )
     # Showing the actual linear regression formula
-    linearfit = lm(formula = quality ~ input$variable, data = redwinequality)
     output$simplelinear = renderPrint(
-        summary(linearfit)
+        summary(lm(formula = redwinequality$quality ~ inputvar()))
     )
 }
 
