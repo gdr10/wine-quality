@@ -3,7 +3,7 @@
 library(shiny)
 library(shinythemes)
 library(ggplot2)
-redwinequality <- read.csv("winequality-red.csv", sep=";")
+redwinequality <- read.csv("https://raw.githubusercontent.com/gdr10/wine-quality/master/winequality-red.csv", sep=";")
 
 # Define UI
 ui <- fluidPage(
