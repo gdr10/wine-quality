@@ -44,7 +44,46 @@ ui <- fluidPage(
                            verbatimTextOutput("simplelinear")
                        )
                    )
-               )
+               ),
+               tabPanel("Multiple Linear",
+                        sidebarLayout(
+                            sidebarPanel(
+                                "Multi-Variable Selection",
+                                p("Select two different variables to test for correlation:"),
+                                selectInput("variable1",
+                                            "Variable 1: ",
+                                            c("Fixed Acidity" = "fixed.acidity",
+                                              "Volatile Acidity" = "volatile.acidity",
+                                              "Citric Acid" = "citric.acid",
+                                              "Residual Sugar" = "residual.sugar",
+                                              "Chlorides" = "chlorides",
+                                              "Free Sulfur Dioxide" = "free.sulfur.dioxide",
+                                              "Total Sulfur Dioxide" = "total.sulfur.dioxide",
+                                              "Density" = "density",
+                                              "pH",
+                                              "Sulphates" = "sulphates",
+                                              "% ABV" = "alcohol"),
+                                            selected = NULL),
+                                selectInput("variable2",
+                                            "Variable 2: ",
+                                            c("Fixed Acidity" = "fixed.acidity",
+                                              "Volatile Acidity" = "volatile.acidity",
+                                              "Citric Acid" = "citric.acid",
+                                              "Residual Sugar" = "residual.sugar",
+                                              "Chlorides" = "chlorides",
+                                              "Free Sulfur Dioxide" = "free.sulfur.dioxide",
+                                              "Total Sulfur Dioxide" = "total.sulfur.dioxide",
+                                              "Density" = "density",
+                                              "pH",
+                                              "Sulphates" = "sulphates",
+                                              "% ABV" = "alcohol"),
+                                            selected = NULL)
+                            ),
+                            mainPanel(
+                                plotOutput("corplot")
+                            )
+                        )
+                )
     ),
 )
 
@@ -71,6 +110,36 @@ server <- function(input, output) {
         if(input$variable == "alcohol") return(redwinequality$alcohol)
     })
     
+    # Same as above, but for the first variable in the two-variable regression
+    firstvar = reactive({
+        if(input$variable1 == "fixed.acidity") return(redwinequality$fixed.acidity)
+        if(input$variable1 == "volatile.acidity") return(redwinequality$volatile.acidity)
+        if(input$variable1 == "citric.acid") return(redwinequality$citric.acid)
+        if(input$variable1 == "residual.sugar") return(redwinequality$residual.sugar)
+        if(input$variable1 == "chlorides") return(redwinequality$chlorides)
+        if(input$variable1 == "free.sulfur.dioxide") return(redwinequality$free.sulfur.dioxide)
+        if(input$variable1 == "total.sulfur.dioxide") return(redwinequality$total.sulfur.dioxide)
+        if(input$variable1 == "density") return(redwinequality$density)
+        if(input$variable1 == "pH") return(redwinequality$pH)
+        if(input$variable1 == "sulphates") return(redwinequality$sulphates)
+        if(input$variable1 == "alcohol") return(redwinequality$alcohol)
+    })
+    
+    # Same as above, but for the second variable in the two-variable regression
+    secondvar = reactive({
+        if(input$variable2 == "fixed.acidity") return(redwinequality$fixed.acidity)
+        if(input$variable2 == "volatile.acidity") return(redwinequality$volatile.acidity)
+        if(input$variable2 == "citric.acid") return(redwinequality$citric.acid)
+        if(input$variable2 == "residual.sugar") return(redwinequality$residual.sugar)
+        if(input$variable2 == "chlorides") return(redwinequality$chlorides)
+        if(input$variable2 == "free.sulfur.dioxide") return(redwinequality$free.sulfur.dioxide)
+        if(input$variable2 == "total.sulfur.dioxide") return(redwinequality$total.sulfur.dioxide)
+        if(input$variable2 == "density") return(redwinequality$density)
+        if(input$variable2 == "pH") return(redwinequality$pH)
+        if(input$variable2 == "sulphates") return(redwinequality$sulphates)
+        if(input$variable2 == "alcohol") return(redwinequality$alcohol)
+    })
+    
     # Plotting the data and a linear regression line based on the variable chosen by the user
     output$linearplot = renderPlot(
         ggplot(data = redwinequality, aes_string(x = input$variable, y = "quality")) +
@@ -80,6 +149,12 @@ server <- function(input, output) {
     # Showing the actual linear regression formula
     output$simplelinear = renderPrint(
         summary(lm(formula = redwinequality$quality ~ inputvar()))
+    )
+    
+    output$corplot = renderPlot(
+        ggplot(data = redwinequality, aes_string(x = input$variable1, y = input$variable2)) +
+            geom_point() +
+            geom_smooth(method = lm, formula = y~x)
     )
 }
 
