@@ -162,7 +162,7 @@ server <- function(input, output) {
     )
     # Printing the result of the correlation test between the two variables
     output$cortest = renderPrint(
-        cor.test(firstvar(), secondvar())
+        if(input$performreg == FALSE) cor.test(firstvar(), secondvar())
     )
     output$twovarreg = renderPrint(
         if(input$performreg == TRUE) summary(lm(formula = quality ~ secondvar() + firstvar() + secondvar():firstvar(), data = redwinequality))
