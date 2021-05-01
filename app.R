@@ -49,7 +49,8 @@ ui <- fluidPage(
                         sidebarLayout(
                             sidebarPanel(
                                 "Multi-Variable Selection",
-                                p("Select two different variables to test for correlation:"),
+                                p("Select two different variables to test for correlation. Once you think you have 
+                                  two correlated variables, check the box to perform a linear regression."),
                                 selectInput("variable1",
                                             "Variable 1: ",
                                             c("Fixed Acidity" = "fixed.acidity",
@@ -77,10 +78,13 @@ ui <- fluidPage(
                                               "pH",
                                               "Sulphates" = "sulphates",
                                               "% ABV" = "alcohol"),
-                                            selected = NULL)
+                                            selected = "Volatile Acidity"),
+                                checkboxInput("performreg", "Perform Regression?", FALSE)
                             ),
                             mainPanel(
-                                plotOutput("corplot")
+                                plotOutput("corplot"),
+                                verbatimTextOutput("cortest"),
+                                verbatimTextOutput("twovarreg")
                             )
                         )
                 )
@@ -150,11 +154,18 @@ server <- function(input, output) {
     output$simplelinear = renderPrint(
         summary(lm(formula = redwinequality$quality ~ inputvar()))
     )
-    
+    # Plotting the variables the user chooses in two-variable regression
     output$corplot = renderPlot(
         ggplot(data = redwinequality, aes_string(x = input$variable1, y = input$variable2)) +
             geom_point() +
             geom_smooth(method = lm, formula = y~x)
+    )
+    # Printing the result of the correlation test between the two variables
+    output$cortest = renderPrint(
+        cor.test(firstvar(), secondvar())
+    )
+    output$twovarreg = renderPrint(
+        if(input$performreg == TRUE) summary(lm(formula = quality ~ secondvar() + firstvar(), data = redwinequality))
     )
 }
 
