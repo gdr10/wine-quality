@@ -165,7 +165,7 @@ server <- function(input, output) {
         cor.test(firstvar(), secondvar())
     )
     output$twovarreg = renderPrint(
-        if(input$performreg == TRUE) summary(lm(formula = quality ~ secondvar() + firstvar(), data = redwinequality))
+        if(input$performreg == TRUE) summary(lm(formula = quality ~ secondvar() + firstvar() + secondvar():firstvar(), data = redwinequality))
     )
 }
 
